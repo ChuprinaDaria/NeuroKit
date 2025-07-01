@@ -41,31 +41,32 @@ def log_admin_message(message):
 
 
 # Функція для розсилки повідомлення всім користувачам
-async def broadcast_message(bot: Bot, message: str):
+async def broadcast_message(bot: Bot, message: str) -> int:
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT telegram_id FROM users')
-            users = cursor.fetchall()
+            # ✅ Отримуємо тільки валідні telegram_id
+            cursor.execute('SELECT telegram_id FROM users WHERE telegram_id IS NOT NULL AND telegram_id > 0')
+            users = [int(row[0]) for row in cursor.fetchall() if row[0]]
 
         success_count = 0
         failed_count = 0
-        logger.info(f"Початок розсилки повідомлення для {len(users)} користувачів")
+        logger.info(f"📨 Початок розсилки повідомлення для {len(users)} користувачів")
 
-        for user in users:
-            chat_id = user[0]
+        for chat_id in users:
             try:
                 await bot.send_message(chat_id=chat_id, text=message)
                 success_count += 1
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.1)  # 🕒 затримка для уникнення FloodLimit
             except Exception as e:
                 failed_count += 1
-                logger.error(f"Помилка надсилання повідомлення користувачу {chat_id}: {e}")
+                logger.warning(f"❌ [{chat_id}] {type(e).__name__}: {e}")
 
-        logger.info(f"Розсилку завершено. Успішно: {success_count}, Помилок: {failed_count}")
+        logger.info(f"✅ Розсилку завершено. Успішно: {success_count}, Помилок: {failed_count}")
         return success_count
+
     except Exception as e:
-        logger.error(f"Глобальна помилка розсилки: {e}")
+        logger.error(f"💥 Глобальна помилка розсилки: {e}")
         logger.error(traceback.format_exc())
         return 0
 
