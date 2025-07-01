@@ -1,0 +1,19 @@
+# Не включати .env, базу даних та сторонні бібліотеки
+.env
+*.db
+__pycache__/
+*.pyc
+
+# Не пушити phpMailer
+phpmailer/
+*.php
+
+# VSCode
+.vscode/
+
+# Лог-файли
+*.log
+
+# Mac/Win специфічне
+.DS_Store
+Thumbs.db
