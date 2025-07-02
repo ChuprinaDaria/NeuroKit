@@ -49,6 +49,8 @@ async def broadcast_message(bot: Bot, message: str):
 
         for user in users:
             chat_id = user[0]
+            print(f"🔁 Спроба надіслати користувачу {chat_id}")
+
             try:
                 await bot.send_message(chat_id=chat_id, text=message)
                 success_count += 1
@@ -121,7 +123,8 @@ async def start_broadcast(message: Message, state: FSMContext):
 
 # Обробка повідомлення для розсилки
 @admin_router.message(StateFilter(States.ADMIN_MESSAGE), F.text != "❌ Скасувати")
-async def process_broadcast_message(message: Message, state: FSMContext, bot: Bot):
+async def process_broadcast_message(message: Message, state: FSMContext):
+    bot = message.bot 
     try:
         if not is_admin(message.from_user.id):
             await message.reply("🐱 У вас немає доступу до адмін-панелі.")
