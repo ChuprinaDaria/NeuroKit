@@ -13,7 +13,7 @@ from aiogram.fsm.state import State, StatesGroup
 import os
 
 from config import ADMIN_IDS
-from .constants import States
+from .constants import States, FSMStates
 from db.tests import get_test_info
 from config import DB_PATH
 
@@ -95,7 +95,7 @@ async def admin_panel(message: Message, state: FSMContext):
             reply_markup=reply_markup
         )
 
-        await state.set_state(States.TEST_MENU)
+        await state.set_state(FSMStates.TEST_MENU)
     except Exception as e:
         logger.error(f"Помилка в адмін-панелі: {e}")
 
@@ -117,12 +117,12 @@ async def start_broadcast(message: Message, state: FSMContext):
             reply_markup=reply_markup
         )
 
-        await state.set_state(States.ADMIN_MESSAGE)
+        await state.set_state(FSMStates.ADMIN_MESSAGE)
     except Exception as e:
         logger.error(f"Помилка підготовки до розсилки: {e}")
 
 # Обробка повідомлення для розсилки
-@admin_router.message(StateFilter(States.ADMIN_MESSAGE), F.text != "❌ Скасувати")
+@admin_router.message(StateFilter(FSMStates.ADMIN_MESSAGE))
 async def process_broadcast_message(message: Message, state: FSMContext):
     bot = message.bot 
     try:
@@ -163,7 +163,7 @@ async def process_broadcast_message(message: Message, state: FSMContext):
             pass
 
 # Скасування розсилки
-@admin_router.message(StateFilter(States.ADMIN_MESSAGE), F.text == "❌ Скасувати")
+@admin_router.message(StateFilter(FSMStates.ADMIN_MESSAGE), F.text == "❌ Скасувати")
 async def cancel_broadcast(message: Message, state: FSMContext):
     try:
         if not is_admin(message.from_user.id):
@@ -267,7 +267,8 @@ async def back_to_main_menu(message: Message, state: FSMContext):
             reply_markup=ReplyKeyboardRemove()
         )
         
-        await state.set_state(States.START)
+        await state.set_state(FSMStates.START)
+
     except Exception as e:
         logger.error(f"Помилка повернення до головного меню: {e}")
 
